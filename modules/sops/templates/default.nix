@@ -127,31 +127,29 @@ in
     };
   };
 
-  config = lib.optionalAttrs (options ? sops.secrets) (
-    lib.mkIf (config.sops.templates != { }) {
-      sops.placeholder = mapAttrs (
-        name: _: mkDefault "<SOPS:${builtins.hashString "sha256" name}:PLACEHOLDER>"
-      ) config.sops.secrets;
+  config = lib.optionalAttrs (options ? sops.secrets) {
+    sops.placeholder = mapAttrs (
+      name: _: mkDefault "<SOPS:${builtins.hashString "sha256" name}:PLACEHOLDER>"
+    ) config.sops.secrets;
 
-      assertions =
-        lib.mapAttrsToList (name: cfg: {
-          assertion = !(cfg.owner != null && cfg.uid != 0);
-          message = ''
-            Assertion failed for `sops.templates.${name}`:
-            Both `owner` and `uid` cannot be defined at the same time. Use either `owner` or leave `uid` as 0.
-            owner: ${cfg.owner}
-            uid: ${toString cfg.uid}
-          '';
-        }) config.sops.templates
-        ++ lib.mapAttrsToList (name: cfg: {
-          assertion = !(cfg.group != null && cfg.gid != 0);
-          message = ''
-            Assertion failed for `sops.templates.${name}`:
-            Both `group` and `gid` cannot be defined at the same time. Use either `group` or leave `gid` as 0.
-            owner: ${cfg.group}
-            uid: ${toString cfg.gid}
-          '';
-        }) config.sops.templates;
-    }
-  );
+    assertions =
+      lib.mapAttrsToList (name: cfg: {
+        assertion = !(cfg.owner != null && cfg.uid != 0);
+        message = ''
+          Assertion failed for `sops.templates.${name}`:
+          Both `owner` and `uid` cannot be defined at the same time. Use either `owner` or leave `uid` as 0.
+          owner: ${cfg.owner}
+          uid: ${toString cfg.uid}
+        '';
+      }) config.sops.templates
+      ++ lib.mapAttrsToList (name: cfg: {
+        assertion = !(cfg.group != null && cfg.gid != 0);
+        message = ''
+          Assertion failed for `sops.templates.${name}`:
+          Both `group` and `gid` cannot be defined at the same time. Use either `group` or leave `gid` as 0.
+          owner: ${cfg.group}
+          uid: ${toString cfg.gid}
+        '';
+      }) config.sops.templates;
+  };
 }
